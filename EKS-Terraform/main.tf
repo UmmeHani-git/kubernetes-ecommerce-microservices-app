@@ -312,7 +312,7 @@ resource "aws_eks_node_group" "node_group" {
 
 
 resource "aws_instance" "eks" {
-    ami           = "ami-0236922087fa98b6e"
+    ami           = "ami-0236922087fa98b6e"  #change ami-id 
     instance_type = "t2.medium"
     subnet_id     = aws_subnet.public1.id
     vpc_security_group_ids = [aws_security_group.allow_all.id]
@@ -443,3 +443,9 @@ resource "aws_eks_addon" "ebs_csi" {
     aws_eks_pod_identity_association.ebs_csi
   ]
 }
+
+# Attach IAM role to ec2-server 
+#After running the terraform code run the below commands 
+#aws configure     
+#aws eks update-kubeconfig --name naresh    
+#kubectl get nodes
