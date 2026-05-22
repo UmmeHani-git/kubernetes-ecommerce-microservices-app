@@ -16,7 +16,7 @@ provider "aws" {
 ############################
 
 variable "cluster_version" {
-  default = "1.35"
+  default = "1.31"
 }
 
 ############################
@@ -44,19 +44,25 @@ resource "aws_internet_gateway" "igw" {
 ############################
 
 resource "aws_subnet" "public1" {
-
   vpc_id                  = aws_vpc.eks_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public1"
+  }
 }
 
 resource "aws_subnet" "public2" {
-
   vpc_id                  = aws_vpc.eks_vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public2"
+  }
 }
 
 resource "aws_subnet" "private1" {
@@ -64,6 +70,10 @@ resource "aws_subnet" "private1" {
   vpc_id            = aws_vpc.eks_vpc.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1a"
+
+    tags = {
+    Name = "private1"
+  }
 }
 
 resource "aws_subnet" "private2" {
@@ -71,6 +81,10 @@ resource "aws_subnet" "private2" {
   vpc_id            = aws_vpc.eks_vpc.id
   cidr_block        = "10.0.4.0/24"
   availability_zone = "us-east-1b"
+
+    tags = {
+    Name = "private2"
+  }
 }
 
 ############################
@@ -85,6 +99,8 @@ resource "aws_nat_gateway" "nat" {
 
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public1.id
+
+  depends_on = [aws_internet_gateway.igw]
 }
 
 ############################
@@ -296,7 +312,7 @@ resource "aws_eks_node_group" "node_group" {
 
 
 resource "aws_instance" "eks" {
-    ami           = "ami-02dfbd4ff395f2a1b"
+    ami           = "ami-0236922087fa98b6e"
     instance_type = "t2.medium"
     subnet_id     = aws_subnet.public1.id
     vpc_security_group_ids = [aws_security_group.allow_all.id]
@@ -315,9 +331,9 @@ resource "aws_instance" "eks" {
                 yum update -y
 
                 # ----------------------------- Install kubectl -----------------------------
-                curl -o /tmp/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
-                chmod +x /tmp/kubectl
-                mv /tmp/kubectl /usr/local/bin/kubectl
+                curl -LO "https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl"
+                chmod +x kubectl
+                mv kubectl /usr/local/bin/
 
                 # Verify kubectl
                 kubectl version --client || true
